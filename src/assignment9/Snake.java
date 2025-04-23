@@ -9,11 +9,15 @@ public class Snake {
 	private LinkedList<BodySegment> segments;
 	private double deltaX;
 	private double deltaY;
+	private boolean growing;
 	
 	public Snake() {
-		//FIXME - set up the segments instance variable
+		segments = new LinkedList<>();
 		deltaX = 0;
 		deltaY = 0;
+		BodySegment Head = new BodySegment(0.5, 0.5, SEGMENT_SIZE); 
+		segments.add(Head);
+		growing = false;
 	}
 	
 	public void changeDirection(int direction) {
@@ -30,6 +34,7 @@ public class Snake {
 			deltaY = 0;
 			deltaX = MOVEMENT_SIZE;
 		}
+		
 	}
 	
 	/**
@@ -37,14 +42,29 @@ public class Snake {
 	 * based on the current direction of travel
 	 */
 	public void move() {
-		//FIXME
+		for (int i = segments.size() - 1; i > 0; i--) {
+			BodySegment previous = segments.get(i - 1);
+			segments.set(i, new BodySegment(previous.getX(), previous.getY(), SEGMENT_SIZE));
+		}
+		BodySegment head = segments.getFirst();
+		double newX = head.getX() + deltaX;
+		double newY = head.getY() + deltaY;
+		segments.addFirst( new BodySegment(newX, newY, SEGMENT_SIZE));
+		
+		if (!growing) {
+			segments.removeLast(); 
+		} else {
+			growing = false;
+		}
 	}
 	
 	/**
 	 * Draws the snake by drawing each segment
 	 */
 	public void draw() {
-		//FIXME
+		for (BodySegment segment : segments) {
+			segment.draw();
+	}
 	}
 	
 	/**
@@ -53,7 +73,16 @@ public class Snake {
 	 * @return true if the snake successfully ate the food
 	 */
 	public boolean eatFood(Food f) {
-		//FIXME
+		if (segments.isEmpty()) return false;
+		BodySegment head = segments.getFirst();
+		double dx = head.getX() - f.getX();
+		double dy = head.getY() - f.getY();
+		double distance = Math.sqrt(dx * dx + dy * dy);
+		
+		if(distance< SEGMENT_SIZE + Food.FOOD_SIZE) {
+			growing = true;
+			return true;
+		}
 		return false;
 	}
 	
@@ -62,7 +91,12 @@ public class Snake {
 	 * @return whether or not the head is in the bounds of the window
 	 */
 	public boolean isInbounds() {
-		//FIXME
-		return true;
+		 if (segments.isEmpty()) return false;
+
+		    BodySegment head = segments.getFirst();
+		    double x = head.getX();
+		    double y = head.getY();
+		    double buffer = SEGMENT_SIZE;
+		    return x >= buffer && x >= 0.0 && x <= 1.0 && y >= 0.0 && y <= 1.0;
 	}
 }
